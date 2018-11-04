@@ -1,124 +1,254 @@
 # Point-class for point use:
 class Point
-  attr_accessor :x, :y
-  def initialize(x, y)
+  attr_accessor :x, :y, :z
+  def initialize(x, y, z)
     @x = x
     @y = y
-  end
-end
-
-# Plane-class for plane use; for comparing planes (not points):
-class Plane
-  attr_accessor :p, :q, :z
-  def initialize(p, q, z)
-    @p = p
-    @q = q
     @z = z
   end
 
-  # uppend figure (x, y -> y, x):
+  def to_s
+    "(x: #{@x}, y: #{@y}, z: #{@z})"
+  end
+end
+
+
+class Shipment
+  attr_accessor :p, :q, :height
+
+  # width -- Ox; depth -- Oy; height -- Oz
+  def initialize(width, depth, height)
+    @p = Point.new(0, 0, 0)
+    @q = Point.new(width, depth, 0)
+    @height    = height
+  end
+
+  def width
+    @q.x - @p.x
+  end
+
+  def depth
+    @q.y - @p.y
+  end
+
   def upend
-    self.q.x, self.q.y = self.q.y, self.q.x
+    shipment = Shipment.new(self.width, self.depth, self.height)
+
+    shipment.p.x, shipment.p.y = shipment.p.y, shipment.p.x
+    shipment.q.x, shipment.q.y = shipment.q.y, shipment.q.x
+
+    return shipment
+  end
+
+  def upend!
     self.p.x, self.p.y = self.p.y, self.p.x
+    self.q.x, self.q.y = self.q.y, self.q.x
 
     return self
   end
 
-  # print it:
+  def recoordinate_under(shipment)
+    width  = self.width
+    depth  = self.depth
+    height = self.height
+
+    self.p.x = shipment.p.x
+    self.p.y = shipment.p.y
+    self.p.z = shipment.p.z + height
+
+    self.q.x = self.p.x + width
+    self.q.y = self.p.y + depth
+    self.q.z = shipment.p.z + height
+
+    return self
+  end
+
+  def recoordinate_beside(shipment)
+    width = self.width
+    depth = self.depth
+
+    self.p.x = shipment.q.x
+    self.p.y = shipment.p.y
+
+    self.q.x = shipment.q.x + width
+    self.q.y = shipment.p.y + depth
+
+    return self
+  end
+
+  def recoordinate_above(shipment)
+    width  = self.width
+    depth  = self.depth
+
+    self.p.x = shipment.p.x
+    self.p.y = shipment.q.y
+
+    self.q.x = self.p.x + width
+    self.q.y = self.p.y + depth
+
+    return self
+  end
+
   def to_s
-    "(#{@p.x}, #{@p.y}); (#{@q.x}, #{@q.y}) -- #{@z}"
+    "[#{@height}] #{@p} / #{@q}"
   end
 end
+
+
 
 # Aircraft-class
 class Aircraft
-  attr_accessor :width, :depth, :height, :shipments
+  attr_accessor :width, :depth, :height, :shipments, :full
 
   def initialize(width, depth, height)
-    @width     = width
-    @depth     = depth
-    @height    = height
-    @shipments = Array.new
+    @width           = width
+    @depth           = depth
+    @height          = height
+    @shipments       = Array.new
+    @queue_shipments = Array.new
+    @full            = false
   end
 
-  # check of fits of a new shipment on aircraft:
-  def fits_on_latitude_new?(plane)
-    @width  >= plane.q.x &&
-    @depth  >= plane.q.y &&
-    @height >= plane.z
-  end
-  def fits_on_longitude_new?(plane)
-    @width  >= plane.q.y &&
-    @depth  >= plane.q.x &&
-    @height >= plane.z
-  end
+  def puts_all
+    puts "AIR:"
+    for t in 0 ... @shipments.size
+        puts @shipments[t]
+    end
 
-  # check of fits of a new shipment on aircraft, if we already have a tower on
-  # aircraft:
-  def fits_on_latitude_tower?(plane)
-    last_plane = @shipments.last.last
-
-    last_plane.q.x - last_plane.p.x >= plane.q.x - plane.p.x &&
-    last_plane.q.y - last_plane.p.y >= plane.q.y - plane.p.y &&
-    last_plane.z + plane.z          <= @height
-  end
-
-  def fits_on_longitude_tower?(plane)
-    last_plane = @shipments.last.last
-
-    last_plane.q.x - last_plane.p.x >= plane.q.y - plane.p.y &&
-    last_plane.q.y - last_plane.p.y >= plane.q.x - plane.p.x &&
-    last_plane.z + plane.z          <= @height
-  end
-
-  # additional of shipment method:
-  def add_shipment(plane)
-    if @shipments.empty?
-      if self.fits_on_latitude_new?(plane)
-        @shipments << [plane]
-      elsif self.fits_on_longitude_new?(plane)
-        plane.upend
-        @shipments << [plane]
-      end
-    else
-      if self.fits_on_latitude_tower?(plane)
-        plane.z += @shipments.last.last.z
-        @shipments.last << plane
-      elsif self.fits_on_longitude_tower?(plane)
-        plane.z += @shipments.last.last.z
-        plane.upend!
-        @shipments.last << plane
-      end
+    puts "QUE:"
+    for t in 0 ... @queue_shipments.size
+        puts @queue_shipments[t]
     end
   end
 
-  # print it:
-  def to_s
-    self.shipments.each do |t|
-      t.each{ |i| i }
+  def full?
+    self.full
+  end
+
+  def is_under_fits?(shimpent)
+    if @shipments.empty?
+      self.width  >= shimpent.width &&
+      self.depth  >= shimpent.depth &&
+      self.height >= shimpent.height
+    else
+      under_shipment = @shipments.last.last
+
+      under_shipment.width                                       >= shimpent.width  &&
+      under_shipment.depth                                       >= shimpent.depth  &&
+      self.height - (under_shipment.p.z + under_shipment.height) >= shimpent.height
+    end
+  end
+
+  def is_under_fits_with_upend?(shimpent)
+    if @shipments.empty?
+      shimpent = shimpent.upend
+
+      self.width  >= shimpent.width &&
+      self.depth  >= shimpent.depth &&
+      self.height >= shimpent.height
+    else
+      under_shipment = @shipments.last.last
+      shimpent       = shimpent.upend
+
+      under_shipment.width                                       >= shimpent.width  &&
+      under_shipment.depth                                       >= shimpent.depth  &&
+      self.height - (under_shipment.p.z + under_shipment.height) >= shimpent.height
+    end
+  end
+
+  def is_beside_fits?(shimpent)
+    beside_shipment = @shipments.last.first
+
+    self.width - beside_shipment.q.x >= shimpent.width &&
+    self.depth - beside_shipment.p.y >= shimpent.depth &&
+    self.height                      >= shimpent.height
+  end
+
+  def is_beside_fits_with_upend?(shimpent)
+    beside_shipment = @shipments.last.first
+    shimpent        = shimpent.upend
+
+    self.width - beside_shipment.q.x >= shimpent.width &&
+    self.depth - beside_shipment.p.y >= shimpent.depth &&
+    self.height                      >= shimpent.height
+  end
+
+  def is_above_fits?(shimpent)
+    beside_shipment = @shipments.last.first
+
+    self.width                       >= shimpent.width &&
+    self.depth - beside_shipment.q.y >= shimpent.depth &&
+    self.height                      >= shimpent.height
+  end
+
+  def is_above_fits_with_upend?(shimpent)
+    beside_shipment = @shipments.last.first
+    shimpent        = shimpent.upend
+
+    self.width                       >= shimpent.width &&
+    self.depth - beside_shipment.q.y >= shimpent.depth &&
+    self.height                      >= shimpent.height
+  end
+
+  def push(shipment)
+    if @shipments.empty?
+      if self.is_under_fits?(shipment)
+        @shipments << [shipment]
+      elsif self.is_under_fits_with_upend?(shipment)
+        @shipments << [shipment.upend!]
+      else
+        @queue_shipments << shipment
+      end
+    else
+      if self.is_under_fits?(shipment)
+        @shipments.last << shipment.recoordinate_under(@shipments.last.last)
+      elsif self.is_under_fits_with_upend?(shipment)
+        @shipments.last << (shipment.upend!).recoordinate_under(@shipments.last.last)
+      else
+        if self.is_beside_fits?(shipment)
+          @shipments << [shipment.recoordinate_beside(@shipments.last.first)]
+        elsif self.is_beside_fits_with_upend?(shipment)
+          @shipments << [(shipment.upend!).recoordinate_beside(@shipments.last.first)]
+        else
+          if self.is_above_fits?(shipment)
+            @shipments << [shipment.recoordinate_above(@shipments.last.first)]
+          elsif self.is_above_fits?(shipment)
+            @shipments << [(shipment.upend!).recoordinate_above(@shipments.last.first)]
+          else
+            @queue_shipments << shipment
+            self.full = true
+          end
+        end
+      end
     end
   end
 end
 
-air = Aircraft.new(10, 5, 1)
-p1 = Point.new(0, 0)
-p2 = Point.new(5, 10)
-pl1 = Plane.new(p1, p2, 0.5)
-air.add_shipment(pl1)
 
-p1 = Point.new(0, 0)
-p2 = Point.new(10, 5)
-pl1 = Plane.new(p1, p2, 0.1)
-air.add_shipment(pl1)
+air = Aircraft.new(10, 10, 1)
+s1 = Shipment.new(10, 4, 1)
+s2 = Shipment.new(10, 4, 1)
+s3 = Shipment.new(10, 4, 1)
 
-p1 = Point.new(0, 0)
-p2 = Point.new(10,5)
-pl1 = Plane.new(p1, p2, 0.1)
-air.add_shipment(pl1)
+# s3 = Shipment.new(1, 10, 1)
+# s4 = Shipment.new(10, 1, 1)
+# s5 = Shipment.new(1, 10, 0.3)
+# s6 = Shipment.new(1, 10, 0.3)
+# s7 = Shipment.new(1, 10, 0.3)
+# s8 = Shipment.new(10, 1, 0.3)
+# s9 = Shipment.new(7, 10, 0.3)
 
-p1 = Point.new(0, 0)
-p2 = Point.new(0.5,0.5)
-pl1 = Plane.new(p1, p2, 0.4)
-air.add_shipment(pl1)
 
-puts air.to_s
+air.push(s1)
+air.push(s2)
+air.push(s3)
+puts air.full?
+# air.push(s4)
+# air.push(s5)
+# air.push(s6)
+# air.push(s7)
+# air.push(s8)
+# air.push(s9)
+
+
+air.puts_all

@@ -1,6 +1,7 @@
 # Point-class for point use:
 class Point
   attr_accessor :x, :y, :z
+
   def initialize(x, y, z)
     @x = x
     @y = y
@@ -12,15 +13,16 @@ class Point
   end
 end
 
-
+# Shipment-class:
 class Shipment
-  attr_accessor :p, :q, :height
+  attr_accessor :p, :q, :height, :id
 
   # width -- Ox; depth -- Oy; height -- Oz
-  def initialize(width, depth, height)
-    @p = Point.new(0, 0, 0)
-    @q = Point.new(width, depth, 0)
-    @height    = height
+  def initialize(id, width, depth, height)
+    @id     = id
+    @p      = Point.new(0, 0, 0)
+    @q      = Point.new(width, depth, 0)
+    @height = height
   end
 
   def width
@@ -31,15 +33,15 @@ class Shipment
     @q.y - @p.y
   end
 
+  # upend shape of plane:
   def upend
-    shipment = Shipment.new(self.width, self.depth, self.height)
+    shipment = Shipment.new(self.id, self.width, self.depth, self.height)
 
     shipment.p.x, shipment.p.y = shipment.p.y, shipment.p.x
     shipment.q.x, shipment.q.y = shipment.q.y, shipment.q.x
 
     return shipment
   end
-
   def upend!
     self.p.x, self.p.y = self.p.y, self.p.x
     self.q.x, self.q.y = self.q.y, self.q.x
@@ -47,6 +49,7 @@ class Shipment
     return self
   end
 
+  # recoordinate plane with under plane:
   def recoordinate_under(shipment)
     width  = self.width
     depth  = self.depth
@@ -63,6 +66,7 @@ class Shipment
     return self
   end
 
+  # recoordinate plane with beside plane:
   def recoordinate_beside(shipment)
     width = self.width
     depth = self.depth
@@ -76,6 +80,7 @@ class Shipment
     return self
   end
 
+  # recoordinate plane with above plane:
   def recoordinate_above(shipment)
     width  = self.width
     depth  = self.depth
@@ -92,15 +97,27 @@ class Shipment
   def to_s
     "[#{@height}] #{@p} / #{@q}"
   end
+
+  def to_h
+    { "id": self.id, "width": self.width.to_s, "depth": self.depth.to_s, "height": self.height.to_s }
+  end
+
+  def to_h_of_c
+    { "id": self.id,
+      "x1": self.p.x.to_s, "y1": self.p.y.to_s, "z1": self.p.z.to_s,
+      "x2": self.q.x.to_s, "y2": self.q.y.to_s, "z2": self.q.z.to_s
+    }
+  end
 end
 
 
 
-# Aircraft-class
+# Aircraft-class:
 class Aircraft
-  attr_accessor :width, :depth, :height, :shipments, :full
+  attr_accessor :id, :width, :depth, :height, :shipments, :full, :queue_shipments
 
-  def initialize(width, depth, height)
+  def initialize(id, width, depth, height)
+    @id              = id
     @width           = width
     @depth           = depth
     @height          = height
@@ -110,7 +127,7 @@ class Aircraft
   end
 
   def puts_all
-    puts "AIR:"
+    puts "AIR{#{@width}/#{@depth}/#{@height}}:"
     for t in 0 ... @shipments.size
         puts @shipments[t]
     end
@@ -121,10 +138,12 @@ class Aircraft
     end
   end
 
+  # aircraft is full?
   def full?
     self.full
   end
 
+  # fit shimpent on a shimpent?
   def is_under_fits?(shimpent)
     if @shipments.empty?
       self.width  >= shimpent.width &&
@@ -139,6 +158,7 @@ class Aircraft
     end
   end
 
+  # fit shimpent on a shimpent with upend?
   def is_under_fits_with_upend?(shimpent)
     if @shipments.empty?
       shimpent = shimpent.upend
@@ -156,6 +176,7 @@ class Aircraft
     end
   end
 
+  # fit shimpent on beside a shimpent?
   def is_beside_fits?(shimpent)
     beside_shipment = @shipments.last.first
 
@@ -164,6 +185,7 @@ class Aircraft
     self.height                      >= shimpent.height
   end
 
+  # fit shimpent on beside a shimpent with upend?
   def is_beside_fits_with_upend?(shimpent)
     beside_shipment = @shipments.last.first
     shimpent        = shimpent.upend
@@ -173,6 +195,7 @@ class Aircraft
     self.height                      >= shimpent.height
   end
 
+  # fit shimpent on above a shimpent?
   def is_above_fits?(shimpent)
     beside_shipment = @shipments.last.first
 
@@ -181,6 +204,7 @@ class Aircraft
     self.height                      >= shimpent.height
   end
 
+  # fit shimpent on above a shimpent with upend?
   def is_above_fits_with_upend?(shimpent)
     beside_shipment = @shipments.last.first
     shimpent        = shimpent.upend
@@ -190,6 +214,7 @@ class Aircraft
     self.height                      >= shimpent.height
   end
 
+  # push a shipment on aircraft:
   def push(shipment)
     if @shipments.empty?
       if self.is_under_fits?(shipment)
@@ -224,31 +249,31 @@ class Aircraft
   end
 end
 
+#
+# air = Aircraft.new(10, 10, 1)
+# s1 = Shipment.new(10, 4, 1)
+# s2 = Shipment.new(10, 4, 1)
+# s3 = Shipment.new(10, 4, 1)
 
-air = Aircraft.new(10, 10, 1)
-s1 = Shipment.new(10, 4, 1)
-s2 = Shipment.new(10, 4, 1)
-s3 = Shipment.new(10, 4, 1)
-
-# s3 = Shipment.new(1, 10, 1)
-# s4 = Shipment.new(10, 1, 1)
-# s5 = Shipment.new(1, 10, 0.3)
-# s6 = Shipment.new(1, 10, 0.3)
-# s7 = Shipment.new(1, 10, 0.3)
-# s8 = Shipment.new(10, 1, 0.3)
-# s9 = Shipment.new(7, 10, 0.3)
-
-
-air.push(s1)
-air.push(s2)
-air.push(s3)
-puts air.full?
-# air.push(s4)
-# air.push(s5)
-# air.push(s6)
-# air.push(s7)
-# air.push(s8)
-# air.push(s9)
-
-
-air.puts_all
+# # s3 = Shipment.new(1, 10, 1)
+# # s4 = Shipment.new(10, 1, 1)
+# # s5 = Shipment.new(1, 10, 0.3)
+# # s6 = Shipment.new(1, 10, 0.3)
+# # s7 = Shipment.new(1, 10, 0.3)
+# # s8 = Shipment.new(10, 1, 0.3)
+# # s9 = Shipment.new(7, 10, 0.3)
+#
+#
+# air.push(s1)
+# air.push(s2)
+# air.push(s3)
+# puts air.full?
+# # air.push(s4)
+# # air.push(s5)
+# # air.push(s6)
+# # air.push(s7)
+# # air.push(s8)
+# # air.push(s9)
+#
+#
+# air.puts_all

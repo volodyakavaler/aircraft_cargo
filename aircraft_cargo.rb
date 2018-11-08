@@ -26,6 +26,7 @@ options = {}
 OptionParser.new do |opt|
   opt.on('-s, --shipments FILE_PATH', 'File path to shipment params') { |o| options[:shipments_path] = o }
   opt.on('-a, --aircrafts FILE_PATH', 'File path to aircraft params') { |o| options[:aircrafts_path] = o }
+  opt.on('-o, --outputpath FILE_PATH', 'File path to output')         { |o| options[:output_path]    = o }
   opt.on_tail("-h", "--help", 'Show this message') do
     puts opt
     exit
@@ -49,9 +50,14 @@ shipments      = JSON.parse(shipments_file)
 aircrafts_file = File.read(options[:aircrafts_path])
 aircrafts      = JSON.parse(aircrafts_file)
 
-# write results to file on results_DATETODAY/AIRCRAFT_ID.json:
-output_path = "results_#{Time.now.to_s.delete(' ')}"
-system("mkdir #{output_path}")
+# write results to file on results_DATETODAY/AIRCRAFT_ID.json or your path-name:
+if options[:output_path].nil?
+  output_path = "results_#{Time.now.to_s.delete(' ')}"
+  system("mkdir #{output_path}")
+else
+  system("mkdir #{options[:output_path]}")
+  output_path = options[:output_path]
+end
 
 # .tex-file initialize:
 File.open("./#{output_path}/picture.tex", "a"){ |g| g.write tex_preambule_begin}

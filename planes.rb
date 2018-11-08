@@ -105,7 +105,7 @@ class Shipment
   def to_h_of_c
     { "id": self.id,
       "x1": self.p.x.to_s, "y1": self.p.y.to_s, "z1": self.p.z.to_s,
-      "x2": self.q.x.to_s, "y2": self.q.y.to_s, "z2": self.q.z.to_s
+      "x2": self.q.x.to_s, "y2": self.q.y.to_s, "z2": (self.q.z + self.height).to_s
     }
   end
 end

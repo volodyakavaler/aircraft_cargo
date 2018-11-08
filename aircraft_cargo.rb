@@ -1,7 +1,9 @@
 require 'optparse'
 require 'json'
 require './planes.rb'
+require './drawer.rb'
 
+# options for terminal-execute:
 options = {}
 OptionParser.new do |opt|
   opt.on('-s, --shipments FILE_PATH', 'File path to shipment params') { |o| options[:shipments_path] = o }
@@ -30,10 +32,13 @@ aircrafts_file = File.read(options[:aircrafts_path])
 aircrafts      = JSON.parse(aircrafts_file)
 
 # write results to file on results_DATETODAY/AIRCRAFT_ID.json:
-# output_file = "results_#{Time.now.to_s.delete(' ')}"
-output_file = "results"
-system("mkdir #{output_file}")
+output_path = "results_#{Time.now.to_s.delete(' ')}"
+system("mkdir #{output_path}")
 
+# .tex-file initialize:
+File.open("./#{output_path}/picture.tex", "a"){ |g| g.write tex_preambule_begin}
+
+# main-calculations:
 for i in 0 ... aircrafts.size
   aircraft_object = Aircraft.new(aircrafts[i]["id"],
                                  aircrafts[i]["width"].to_i,
@@ -49,19 +54,32 @@ for i in 0 ... aircrafts.size
     aircraft_object.push(shipment_object)
   end
 
-  File.open("./#{output_file}/#{aircrafts[i]["id"]}.json", "w") do |f|
-    output = []
-    aircraft_object.shipments.each{ |t| t.each do |o|
-      output << o.to_h_of_c
-    end }
-    f.write output.to_json
+  # write to files necessary information:
+  File.open("./#{output_path}/#{aircrafts[i]["id"]}.json", "w") do |f|
+    File.open("./#{output_path}/picture.tex", "a") do |g|
+      g.write tikz_begin(aircraft_object)
+      output = []
+      aircraft_object.shipments.each{ |t| t.each do |o|
+        g.write  draw_shipment(o)
+        output << o.to_h_of_c
+      end }
+      f.write output.to_json
+      g.write tikz_end(aircraft_object.id)
+    end
   end
 
-  # aircraft_object.puts_all
   aircraft_object.queue_shipments.each{ |j| shipments.unshift(j.to_h) }
 end
 
+# finally-work with .tex-files (.pdf with .tex-file you can see in
+# results_DATETODAY directory):
+File.open("./#{output_path}/picture.tex", "a"){ |g| g.write tex_preambule_end}
+system ("pdflatex ./#{output_path}/picture.tex")
+system ("mv picture.pdf ./#{output_path}")
+system ("rm picture.log")
+system ("rm picture.aux")
+
 # write to file on results_DATETODAY/lefts.json lefts shipments:
-File.open("./#{output_file}/lefts.json", "w") do |f|
+File.open("./#{output_path}/lefts.json", "w") do |f|
   f.write shipments.to_json
 end

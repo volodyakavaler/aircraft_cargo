@@ -59,16 +59,16 @@ File.open("./#{output_path}/picture.tex", "a"){ |g| g.write tex_preambule_begin}
 # main-calculations:
 for i in 0 ... aircrafts.size
   aircraft_object = Aircraft.new(aircrafts[i]["id"],
-                                 aircrafts[i]["width"].to_i,
-                                 aircrafts[i]["depth"].to_i,
-                                 aircrafts[i]["height"].to_i)
+                                 aircrafts[i]["width"].to_f,
+                                 aircrafts[i]["depth"].to_f,
+                                 aircrafts[i]["height"].to_f)
 
   until aircraft_object.full? || shipments.empty?
     shipment        = shipments.shift
     shipment_object = Shipment.new(shipment["id"],
-                                   shipment["width"].to_i,
-                                   shipment["depth"].to_i,
-                                   shipment["height"].to_i)
+                                   shipment["width"].to_f,
+                                   shipment["depth"].to_f,
+                                   shipment["height"].to_f)
     aircraft_object.push(shipment_object)
   end
 

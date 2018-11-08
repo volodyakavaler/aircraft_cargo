@@ -1,3 +1,21 @@
+################################################################################
+#                            BIN PACKING PROBLEM                               #
+# To run the program you should input:                                         #
+#   aircraft_cargo.rb -s shipments-file -a aircrafts-file                      #
+# shipments-file and aircrafts-file is json-file, where you describe shipments #
+# and aircrafts:                                                               #
+#   [                                                                          #
+#   {"id": "1", "width": "10", "depth": "10", "height": "10"}                  #
+#   ]                                                                          #
+#   this params is example only.                                               #
+# This problem is solved by the simplest method: shipments are sorted by       #
+# depth and put on the first appropriate by height then by level of shipment-  #
+# depth.                                                                       #
+# After completing the program, you receive: several files with distributed    #
+# shipments, undistributed shipments, tex-file with "picture" of this and      #
+# pdf-file with this pictures.                                                 #
+################################################################################
+
 require 'optparse'
 require 'json'
 require './planes.rb'

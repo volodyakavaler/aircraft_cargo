@@ -46,6 +46,10 @@ shipments_file = File.read(options[:shipments_path])
 shipments      = JSON.parse(shipments_file)
                      .sort_by { |hsh| hsh["depth"] }.reverse!
 
+
+puts shipments
+
+
 # aircrafts reading to aircraft-variable:
 aircrafts_file = File.read(options[:aircrafts_path])
 aircrafts      = JSON.parse(aircrafts_file)

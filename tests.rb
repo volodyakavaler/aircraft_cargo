@@ -1,0 +1,8 @@
+system("ruby aircraft_cargo.rb  -s tests/1/shipments_test.json  -a tests/1/aircrafts_test.json -o tests/1/#{"results_#{Time.now.to_s.delete(' ')}"}")
+system("ruby aircraft_cargo.rb  -s tests/2/shipments_test.json  -a tests/2/aircrafts_test.json -o tests/2/#{"results_#{Time.now.to_s.delete(' ')}"}")
+system("ruby aircraft_cargo.rb  -s tests/3/shipments_test.json  -a tests/3/aircrafts_test.json -o tests/3/#{"results_#{Time.now.to_s.delete(' ')}"}")
+system("ruby aircraft_cargo.rb  -s tests/4/shipments_test.json  -a tests/4/aircrafts_test.json -o tests/4/#{"results_#{Time.now.to_s.delete(' ')}"}")
+system("ruby aircraft_cargo.rb  -s tests/5/shipments_test.json  -a tests/5/aircrafts_test.json -o tests/5/#{"results_#{Time.now.to_s.delete(' ')}"}")
+system("ruby aircraft_cargo.rb  -s tests/6/shipments_test.json  -a tests/6/aircrafts_test.json -o tests/6/#{"results_#{Time.now.to_s.delete(' ')}"}")
+system("ruby aircraft_cargo.rb  -s tests/7/shipments_test.json  -a tests/7/aircrafts_test.json -o tests/7/#{"results_#{Time.now.to_s.delete(' ')}"}")
+system("ruby aircraft_cargo.rb  -s tests/8/shipments_test.json  -a tests/8/aircrafts_test.json -o tests/8/#{"results_#{Time.now.to_s.delete(' ')}"}")

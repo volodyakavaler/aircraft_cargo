@@ -1,0 +1,15 @@
+[
+  {"id": "0", "width": "6", "depth": "6", "height": "6"},
+  {"id": "1", "width": "7", "depth": "4", "height": "6"},
+  {"id": "2", "width": "3", "depth": "2", "height": "6"},
+  {"id": "3", "width": "1", "depth": "1", "height": "6"},
+  {"id": "4", "width": "1", "depth": "1", "height": "6"},
+  {"id": "5", "width": "1", "depth": "1", "height": "6"},
+  {"id": "6", "width": "1", "depth": "1", "height": "6"},
+  {"id": "7", "width": "1", "depth": "1", "height": "6"},
+  {"id": "8", "width": "1", "depth": "1", "height": "6"},
+  {"id": "9", "width": "1", "depth": "1", "height": "6"},
+  {"id": "10", "width": "1", "depth": "1", "height": "6"},
+  {"id": "11", "width": "1", "depth": "1", "height": "6"},
+  {"id": "12", "width": "1", "depth": "1", "height": "6"}
+]

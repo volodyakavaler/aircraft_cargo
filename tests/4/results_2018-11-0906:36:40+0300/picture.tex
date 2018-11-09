@@ -1,0 +1,29 @@
+\documentclass[tikz,border=5]{standalone}
+  \usepackage{xxcolor}
+  \usetikzlibrary{arrows.meta}
+  \tikzset{pics/cube/.style args={#1 #2 #3 #4}{code={%
+    \path [#4, fill, draw]
+      (0,#2,0)  coordinate (-top-a) -- (#1,#2,0) coordinate (-top-b) --
+      (#1,#2,#3) coordinate (-top-c) -- (0,#2,#3) coordinate (-top-d) -- cycle;
+    \path [#4!75!black, fill, draw]
+      (#1,0,0) -- (#1,#2,0) -- (#1,#2,#3) -- (#1,0,#3) -- cycle;
+    \path [#4!50!black, fill, draw]
+      (0,0,#3) -- (0,#2,#3) -- (#1,#2,#3) -- (#1,0,#3) -- cycle;
+  }}}
+\begin{document}\begin{tikzpicture}[line join=round, line cap=round,>=Triangle,
+   axis/.style={ultra thick, ->, draw=black}]
+  \draw [axis] (0,0,0) -- (20.0,0,0) node (xaxis) [above] {$x$};
+  \draw [axis] (0,0,0) -- (0,11.0,0) node (xaxis) [above] {$z$};
+  \draw [axis] (0,0,0) -- (0,0,11.0) node (xaxis) [above] {$y$};
+  \begin{colormixin}{85!white}\pic at (0,0,0) {cube={6.0 6.0 6.0 yellow}};
+\end{colormixin}
+  \node[above,font=\large\bfseries] at (current bounding box.north) {aircraft: 1};
+  \end{tikzpicture}\begin{tikzpicture}[line join=round, line cap=round,>=Triangle,
+   axis/.style={ultra thick, ->, draw=black}]
+  \draw [axis] (0,0,0) -- (20.0,0,0) node (xaxis) [above] {$x$};
+  \draw [axis] (0,0,0) -- (0,11.0,0) node (xaxis) [above] {$z$};
+  \draw [axis] (0,0,0) -- (0,0,11.0) node (xaxis) [above] {$y$};
+  \begin{colormixin}{85!white}\pic at (0,0,0) {cube={6.0 6.0 6.0 gray}};
+\end{colormixin}
+  \node[above,font=\large\bfseries] at (current bounding box.north) {aircraft: 2};
+  \end{tikzpicture}\end{document}

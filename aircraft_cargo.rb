@@ -46,10 +46,6 @@ shipments_file = File.read(options[:shipments_path])
 shipments      = JSON.parse(shipments_file)
                      .sort_by { |hsh| hsh["depth"] }.reverse!
 
-
-puts shipments
-
-
 # aircrafts reading to aircraft-variable:
 aircrafts_file = File.read(options[:aircrafts_path])
 aircrafts      = JSON.parse(aircrafts_file)
@@ -87,10 +83,10 @@ for i in 0 ... aircrafts.size
     File.open("./#{output_path}/picture.tex", "a") do |g|
       g.write tikz_begin(aircraft_object)
       output = []
-      aircraft_object.shipments.each{ |t| t.each do |o|
+      aircraft_object.shipments.each{ |r| r.each{ |t| t.each do |o|
         g.write  draw_shipment(o)
         output << o.to_h_of_c
-      end }
+      end }}
       f.write output.to_json
       g.write tikz_end(aircraft_object.id)
     end

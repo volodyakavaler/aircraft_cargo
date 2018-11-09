@@ -53,7 +53,7 @@ class Shipment
   def recoordinate_under(shipment)
     width  = self.width
     depth  = self.depth
-    height = self.height
+    height = shipment.height
 
     self.p.x = shipment.p.x
     self.p.y = shipment.p.y
@@ -74,8 +74,8 @@ class Shipment
     self.p.x = shipment.q.x
     self.p.y = shipment.p.y
 
-    self.q.x = shipment.q.x + width
-    self.q.y = shipment.p.y + depth
+    self.q.x = self.p.x + width
+    self.q.y = self.p.y + depth
 
     return self
   end
@@ -150,7 +150,7 @@ class Aircraft
       self.depth  >= shimpent.depth &&
       self.height >= shimpent.height
     else
-      under_shipment = @shipments.last.last
+      under_shipment = @shipments.last.last.last
 
       under_shipment.width                                       >= shimpent.width  &&
       under_shipment.depth                                       >= shimpent.depth  &&
@@ -167,7 +167,7 @@ class Aircraft
       self.depth  >= shimpent.depth &&
       self.height >= shimpent.height
     else
-      under_shipment = @shipments.last.last
+      under_shipment = @shipments.last.last.last
       shimpent       = shimpent.upend
 
       under_shipment.width                                       >= shimpent.width  &&
@@ -178,26 +178,28 @@ class Aircraft
 
   # fit shimpent on beside a shimpent?
   def is_beside_fits?(shimpent)
-    beside_shipment = @shipments.last.first
+    first_shipment  = @shipments.last.first.first
+    beside_shipment = @shipments.last.last.first
 
     self.width - beside_shipment.q.x >= shimpent.width &&
-    self.depth - beside_shipment.p.y >= shimpent.depth &&
+    first_shipment.depth             >= shimpent.depth &&
     self.height                      >= shimpent.height
   end
 
   # fit shimpent on beside a shimpent with upend?
   def is_beside_fits_with_upend?(shimpent)
-    beside_shipment = @shipments.last.first
+    first_shipment  = @shipments.last.first.first
+    beside_shipment = @shipments.last.last.first
     shimpent        = shimpent.upend
 
     self.width - beside_shipment.q.x >= shimpent.width &&
-    beside_shipment.p.y              >= shimpent.depth &&
+    first_shipment.depth             >= shimpent.depth &&
     self.height                      >= shimpent.height
   end
 
   # fit shimpent on above a shimpent?
   def is_above_fits?(shimpent)
-    beside_shipment = @shipments.last.first
+    beside_shipment = @shipments.last.first.first
 
     self.width                       >= shimpent.width &&
     self.depth - beside_shipment.q.y >= shimpent.depth &&
@@ -206,7 +208,7 @@ class Aircraft
 
   # fit shimpent on above a shimpent with upend?
   def is_above_fits_with_upend?(shimpent)
-    beside_shipment = @shipments.last.first
+    beside_shipment = @shipments.last.first.first
     shimpent        = shimpent.upend
 
     self.width                       >= shimpent.width &&
@@ -218,27 +220,27 @@ class Aircraft
   def push(shipment)
     if @shipments.empty?
       if self.is_under_fits?(shipment)
-        @shipments << [shipment]
+        @shipments << [[shipment]]
       elsif self.is_under_fits_with_upend?(shipment)
-        @shipments << [shipment.upend!]
+        @shipments << [[shipment.upend!]]
       else
         @queue_shipments << shipment
       end
     else
       if self.is_under_fits?(shipment)
-        @shipments.last << shipment.recoordinate_under(@shipments.last.last)
+        @shipments.last.last << shipment.recoordinate_under(@shipments.last.last.last)
       elsif self.is_under_fits_with_upend?(shipment)
-        @shipments.last << (shipment.upend!).recoordinate_under(@shipments.last.last)
+        @shipments.last.last << (shipment.upend!).recoordinate_under(@shipments.last.last.last)
       else
         if self.is_beside_fits?(shipment)
-          @shipments << [shipment.recoordinate_beside(@shipments.last.first)]
+          @shipments.last << [shipment.recoordinate_beside(@shipments.last.last.first)]
         elsif self.is_beside_fits_with_upend?(shipment)
-          @shipments << [(shipment.upend!).recoordinate_beside(@shipments.last.first)]
+          @shipments.last << [(shipment.upend!).recoordinate_beside(@shipments.last.last.first)]
         else
           if self.is_above_fits?(shipment)
-            @shipments << [shipment.recoordinate_above(@shipments.last.first)]
+            @shipments << [[shipment.recoordinate_above(@shipments.last.first.first)]]
           elsif self.is_above_fits?(shipment)
-            @shipments << [(shipment.upend!).recoordinate_above(@shipments.last.first)]
+            @shipments << [[(shipment.upend!).recoordinate_above(@shipments.last.first.first)]]
           else
             @queue_shipments << shipment
             self.full = true
@@ -248,32 +250,3 @@ class Aircraft
     end
   end
 end
-
-#
-# air = Aircraft.new(10, 10, 1)
-# s1 = Shipment.new(10, 4, 1)
-# s2 = Shipment.new(10, 4, 1)
-# s3 = Shipment.new(10, 4, 1)
-
-# # s3 = Shipment.new(1, 10, 1)
-# # s4 = Shipment.new(10, 1, 1)
-# # s5 = Shipment.new(1, 10, 0.3)
-# # s6 = Shipment.new(1, 10, 0.3)
-# # s7 = Shipment.new(1, 10, 0.3)
-# # s8 = Shipment.new(10, 1, 0.3)
-# # s9 = Shipment.new(7, 10, 0.3)
-#
-#
-# air.push(s1)
-# air.push(s2)
-# air.push(s3)
-# puts air.full?
-# # air.push(s4)
-# # air.push(s5)
-# # air.push(s6)
-# # air.push(s7)
-# # air.push(s8)
-# # air.push(s9)
-#
-#
-# air.puts_all

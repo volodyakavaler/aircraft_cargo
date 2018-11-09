@@ -191,7 +191,7 @@ class Aircraft
     shimpent        = shimpent.upend
 
     self.width - beside_shipment.q.x >= shimpent.width &&
-    self.depth - beside_shipment.p.y >= shimpent.depth &&
+    beside_shipment.p.y              >= shimpent.depth &&
     self.height                      >= shimpent.height
   end
 

@@ -92,7 +92,8 @@ for i in 0 ... aircrafts.size
     end
   end
 
-  aircraft_object.queue_shipments.each{ |j| shipments.unshift(j.to_h) }
+  aircraft_object.queue_shipments.each{ |j| shipments.unshift(JSON.parse(j.to_h.to_json)) }
+
 end
 
 # finally-work with .tex-files (.pdf with .tex-file you can see in
